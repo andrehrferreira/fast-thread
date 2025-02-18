@@ -104,6 +104,7 @@ processData();
 ---
 
 ### **Main Thread (test.js)**
+
 ```javascript
 const { FastThread } = require("fast-thread");
 
@@ -138,6 +139,46 @@ Since `SharedArrayBuffer` has a fixed size, it's essential to send messages sequ
 Currently, no parallel message handling system has been implemented, meaning multiple messages cannot be processed simultaneously within the same thread instance.
 
 To handle this limitation, the `await fastThread.awaitThreadResponse();` call ensures that each message is processed before sending the next one. Without this mechanism, sending multiple messages at once could result in data loss or overwritten responses.
+
+### **Main Thread (test-alternative.js)**
+
+```javascript
+const { Worker } = require("worker_threads");
+const fastJson = require("fast-json-stringify");
+
+const { 
+    createSharedBuffer, packObject, 
+    unpackObject 
+} = require("fast-thread");
+
+const sharedBuffer = createSharedBuffer();
+const worker = new Worker("./worker_fast.js", { workerData: sharedBuffer });
+
+const stringify = fastJson({
+    title: "Example",
+    type: "object",
+    properties: {
+        id: { type: "integer" },
+        name: { type: "string" },
+        timestamp: { type: "integer" },
+        data: { type: "string" }
+    }
+});
+
+packObject(stringify({ 
+    id: 1, 
+    name: "User A", 
+    timestamp: Date.now(), 
+    data: "x".repeat(512) 
+}), sharedBuffer);
+
+const checkResponses = () => {
+    Atomics.wait(sharedBuffer.signal, 1, 0);
+    const processedData = unpackObject(sharedBuffer, 1);
+    console.log("[Main] Processed data received:", processedData);
+    setImmediate(checkResponses);
+};
+```
 
 ---
 
