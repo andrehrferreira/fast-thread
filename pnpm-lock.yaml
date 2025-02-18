@@ -24,6 +24,12 @@ importers:
       chalk:
         specifier: ^5.4.1
         version: 5.4.1
+      conventional-changelog:
+        specifier: ^6.0.0
+        version: 6.0.0(conventional-commits-filter@5.0.0)
+      conventional-changelog-cli:
+        specifier: ^5.0.0
+        version: 5.0.0(conventional-commits-filter@5.0.0)
       enquirer:
         specifier: ^2.4.1
         version: 2.4.1

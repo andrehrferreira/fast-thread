@@ -1,13 +1,14 @@
 {
     "name": "fast-thread",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Implementing cross-thread serialization using SharedArrayBuffer + Atomics",
     "author": "Andre Ferreira",
     "license": "MIT",
     "main": "index.js",
     "scripts": {
         "test": "vitest",
-        "release": "node ./release"
+        "release": "node ./release",
+        "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
     },
     "keywords": [
         "thread",
@@ -33,6 +34,8 @@
         "bson": "^6.10.2",
         "cbor": "^10.0.3",
         "chalk": "^5.4.1",
+        "conventional-changelog": "^6.0.0",
+        "conventional-changelog-cli": "^5.0.0",
         "enquirer": "^2.4.1",
         "execa": "^9.5.2",
         "msgpack-lite": "^0.1.26",
