@@ -1,0 +1,25 @@
+{
+  "name": "fast-thread",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest"
+  },
+  "keywords": [
+    "thread",
+    "sharedarraybuffer",
+    "msgpack",
+    "buffer",
+    "pack"
+  ],
+  "author": "Andre Ferreira",
+  "license": "MIT",
+  "dependencies": {
+    "msgpack-lite": "^0.1.26"
+  },
+  "devDependencies": {
+    "@cmmv/cli": "^0.5.9",
+    "vitest": "^3.0.5"
+  }
+}
