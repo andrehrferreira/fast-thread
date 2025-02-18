@@ -26,9 +26,10 @@ We tested multiple serialization methods to find the **fastest** approach for in
 | **fast-thread** 🚀        | **SharedArrayBuffer + Atomics** (No Copy) | Requires structured memory handling        |
 
 After extensive benchmarking, **the fastest approach** was a combination of:
-✅ **SharedArrayBuffer** for **direct memory access**  
-✅ **Atomics.wait()/Atomics.notify()** for **ultra-fast synchronization**  
-✅ **fast-json-stringify** for **zero-copy, schema-based serialization**  
+
+* ✅ **SharedArrayBuffer** for **direct memory access**  
+* ✅ **Atomics.wait()/Atomics.notify()** for **ultra-fast synchronization**  
+* ✅ **fast-json-stringify** for **zero-copy, schema-based serialization**  
 
 ---
 
@@ -101,11 +102,23 @@ processData();
 ```javascript
 const { Worker } = require("worker_threads");
 const { createSharedBuffer, packObject, unpackObject } = require("./index");
+const fastJson = require("fast-json-stringify");
 
 const sharedBuffer = createSharedBuffer();
 const worker = new Worker("./benchmarks/worker_fast.js", { workerData: sharedBuffer });
 
-packObject(JSON.stringify({ id: 1, name: "User A", timestamp: Date.now(), data: "x".repeat(512) }), sharedBuffer);
+const stringify = fastJson({
+    title: "Example",
+    type: "object",
+    properties: {
+        id: { type: "integer" },
+        name: { type: "string" },
+        timestamp: { type: "integer" },
+        data: { type: "string" }
+    }
+});
+
+packObject(stringify({ id: 1, name: "User A", timestamp: Date.now(), data: "x".repeat(512) }), sharedBuffer);
 
 (async () => {
     while(true){
@@ -120,5 +133,3 @@ packObject(JSON.stringify({ id: 1, name: "User A", timestamp: Date.now(), data: 
 
 ## 📌 Conclusion
 **fast-thread** enables **blazing-fast** thread communication in Node.js using **SharedArrayBuffer**, **Atomics**, and **fast-json-stringify**. This approach eliminates **message serialization overhead**, delivering **unparalleled performance** in **high-throughput parallel workloads**.
-
-🔥 **Use fast-thread if you need the highest performance in parallel processing for Node.js.**
