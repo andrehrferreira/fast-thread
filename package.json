@@ -1,6 +1,6 @@
 {
     "name": "fast-thread",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "Implementing cross-thread serialization using SharedArrayBuffer + Atomics",
     "author": "Andre Ferreira",
     "license": "MIT",

@@ -1,3 +1,12 @@
+## [0.0.4](https://github.com/andrehrferreira/fast-thread/compare/v0.0.3...v0.0.4) (2025-02-18)
+
+
+### Features
+
+* event system ([b79090a](https://github.com/andrehrferreira/fast-thread/commit/b79090a3d167d5bf042e3623bb7117f530cdeb44))
+
+
+
 ## 0.0.3 (2025-02-18)
 
 
