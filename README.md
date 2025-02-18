@@ -105,39 +105,39 @@ processData();
 
 ### **Main Thread (test.js)**
 ```javascript
-const { Worker } = require("worker_threads");
-const fastJson = require("fast-json-stringify");
-const { createSharedBuffer, packObject, unpackObject } = require("fast-thread");
-
-const sharedBuffer = createSharedBuffer();
-const worker = new Worker("./benchmarks/worker_fast.js", { workerData: sharedBuffer });
-
-const stringify = fastJson({
-    title: "Example",
-    type: "object",
-    properties: {
-        id: { type: "integer" },
-        name: { type: "string" },
-        timestamp: { type: "integer" },
-        data: { type: "string" }
-    }
-});
-
-packObject(stringify({ 
-    id: 1, 
-    name: "User A", 
-    timestamp: Date.now(), 
-    data: "x".repeat(512) 
-}), sharedBuffer);
+const { FastThread } = require("fast-thread");
 
 (async () => {
-    while(true){
-        Atomics.wait(sharedBuffer.signal, 1, 0);
-        const processedData = unpackObject(sharedBuffer, 1);
-        console.log("[Main] Processed data received:", processedData);
+    const fastThread = new FastThread("./worker_fast.js", 1024 * 1024)
+
+    fastThread.on("message", (data) => {
+        console.log("[Main] Processed data received:", data);
+    });
+
+    fastThread.on("terminated", () => {
+        console.log("Thread closed");
+    });
+
+    for(let i = 0; i < 100; i++){
+        fastThread.send({
+            id: i,
+            name: "User " + i,
+            timestamp: Date.now(),
+            data: "x".repeat(512)
+        });
+
+        await fastThread.awaitThreadReponse();
     }
+
+    setTimeout(() => fastThread.terminate(), 2000);
 })();
 ```
+
+Since `SharedArrayBuffer` has a fixed size, it's essential to send messages sequentially, waiting for a response before sending the next job. This prevents buffer overwriting, ensuring each message is processed correctly.
+
+Currently, no parallel message handling system has been implemented, meaning multiple messages cannot be processed simultaneously within the same thread instance.
+
+To handle this limitation, the `await fastThread.awaitThreadResponse();` call ensures that each message is processed before sending the next one. Without this mechanism, sending multiple messages at once could result in data loss or overwritten responses.
 
 ---
 
