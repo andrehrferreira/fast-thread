@@ -1,54 +1,124 @@
 # 🚀 fast-thread
 
-**fast-thread** is a module designed to implement the **most optimized solution** for transmitting data objects between threads in **Node.js**, ensuring **maximum performance** in parallel processing.
+**fast-thread** is a high-performance module designed for **ultra-fast** object transmission between threads in **Node.js**, optimizing **parallel processing** with **SharedArrayBuffer**, **Atomics**, and **fast-json-stringify**.
 
-## 🔥 Motivation
+## 🔥 Why fast-thread?
 
-Communication between **threads in Node.js** presents significant challenges compared to other languages due to the **lack of native memory sharing**. In Node.js:
-- **Threads cannot share native objects** directly.
-- **All data must be serialized and sent via messaging**, adding overhead.
-- **Complex objects cannot be transmitted natively**, unlike other languages that allow direct memory access.
+In **Node.js**, thread communication has inherent limitations:
+- **No native memory sharing** like in other languages.
+- **All data must be serialized and sent via messaging**, adding **overhead**.
+- **Complex objects cannot be shared natively**, requiring costly serialization.
 
-For this reason, **the faster the object serialization and deserialization process, the better the parallelism performance**. This is particularly relevant for **mass data processing**, such as:
-- **Real-time data analytics**
-- **Large-scale JSON processing**
-- **Big data transformations**
-- **High-performance parallel computations**
+For **high-performance applications**, reducing serialization time **directly improves parallel processing speed**.
 
-For **tasks like video encoding or image processing**, where workers mainly execute computations rather than exchanging large data sets, this solution may be less critical but still improves communication speed.
+## 🚀 The Challenge: Finding the Fastest Serialization Method
 
----
+We tested multiple serialization methods to find the **fastest** approach for inter-thread communication in **Node.js**.
 
-## 🚀 **The Challenge: Finding the Fastest Serialization Method**
+| Serialization Method       | Pros                                      | Cons                                        |
+|---------------------------|-------------------------------------------|---------------------------------------------|
+| **JSON (`JSON.stringify`)** | Built-in, no dependencies                 | Slower serialization, larger payload       |
+| **msgpack-lite**          | Compact binary format                     | Slower than JSON in V8                     |
+| **CBOR**                  | Compact and structured binary format      | Still slower than JSON                     |
+| **BSON**                  | Optimized for MongoDB, fast parsing       | High overhead for small objects            |
+| **Protobuf.js**           | Compact, schema-based, high performance   | Requires pre-defined schema                |
+| **fast-json-stringify**   | Faster than `JSON.stringify` with schema  | Still requires copying in `postMessage()` |
+| **fast-thread** 🚀        | **SharedArrayBuffer + Atomics** (No Copy) | Requires structured memory handling        |
 
-Since Node.js **requires messaging for thread communication**, we tested various serialization methods to determine **the fastest approach**. The following technologies were evaluated:
-
-| Serialization Method | Pros | Cons |
-|----------------------|------|------|
-| **JSON (`JSON.stringify`)** | Built-in, no dependencies | Slow serialization, large output |
-| **msgpack-lite** | Compact, efficient binary format | Slower than JSON in V8 |
-| **CBOR** | More compact than JSON, structured binary format | Still slower than JSON in benchmarks |
-| **BSON** | Optimized for MongoDB, fast parsing | High overhead for small objects |
-| **Protobuf.js** | Compact, schema-based, high performance | Requires pre-defined schema |
-| **fast-json-stringify** | Faster than `JSON.stringify` with optimized schema | Still requires copying in `postMessage()` |
-| **SharedArrayBuffer + Atomics + fast-json-stringify** | 🚀 **Best performance** 🚀 | Requires structured memory handling |
-
-After extensive benchmarking, **the fastest approach** was a **combination of `fast-json-stringify` + SharedArrayBuffer + Atomics**, which significantly reduced **serialization overhead and unnecessary data copying**.
+After extensive benchmarking, **the fastest approach** was a combination of:
+✅ **SharedArrayBuffer** for **direct memory access**  
+✅ **Atomics.wait()/Atomics.notify()** for **ultra-fast synchronization**  
+✅ **fast-json-stringify** for **zero-copy, schema-based serialization**  
 
 ---
 
-## ⚡ **Solution: fast-thread**
-**fast-thread** uses:
-✅ **SharedArrayBuffer** to store and share data between threads  
-✅ **Atomics.wait()/Atomics.notify()** for fast synchronization  
-✅ **fast-json-stringify** for **ultra-fast serialization**  
-✅ **Zero-copy message passing** to avoid unnecessary overhead  
+## 📊 Benchmark Results
 
-This allows **thread-to-thread communication to happen at maximum speed**, eliminating excessive **serialization/deserialization costs** and reducing **latency bottlenecks**.
+Our tests measured **message throughput** (msg/sec) and **bandwidth** (MB/sec) over a 10s test period.
+
+| Name                     | Messages | Messages Per Second | MB Per Second |
+|--------------------------|----------|---------------------|--------------|
+| **fast-thread**         | 617,483  | 61,748.30          | 65.34        |
+| **JSON**                | 524,235  | 52,423.50          | 55.48        |
+| **fast-json-stringify** | 500,024  | 50,002.40          | 52.10        |
+| **BSON**                | 420,946  | 42,094.60          | 44.19        |
+| **Protobuf.js**         | 296,340  | 29,634.00          | 29.75        |
+| **msgpack-lite**        | 288,180  | 28,818.00          | 29.86        |
+| **CBOR**                | 223,945  | 22,394.50          | 23.20        |
+
+
+🚀 **fast-thread** achieved the best performance with a throughput of **~61,748 messages per second** and **65.34 MB/sec**.
 
 ---
 
-## 📌 **Installation**
+## ⚡ Solution: **SharedArrayBuffer + Atomics + fast-json-stringify**
+
+### How It Works
+- **SharedArrayBuffer** is used for **zero-copy** memory sharing.
+- **Atomics.wait()/Atomics.notify()** provide **fast synchronization** between threads.
+- **fast-json-stringify** eliminates JSON parsing overhead.
+
+---
+
+## 📌 Installation
+
 ```sh
 pnpm install fast-thread
 ```
+
+---
+
+## 🛠 Example Usage
+
+### **Worker Thread (worker_fast.js)**
+```javascript
+const { workerData } = require("worker_threads");
+const { schema } = require("./schema.js");
+const { unpackObject, packObject } = require("../index.js");
+const fastJson = require("fast-json-stringify");
+
+const stringify = fastJson(schema);
+const sharedBuffer = workerData;
+
+async function processData() {
+    while (true) {
+        Atomics.wait(sharedBuffer.signal, 0, 0);
+
+        let obj = unpackObject(sharedBuffer);
+        if (!obj) continue;
+
+        obj.processed = true;
+        packObject(stringify(obj), sharedBuffer, 1);
+    }
+}
+
+processData();
+```
+
+---
+
+### **Main Thread (test.js)**
+```javascript
+const { Worker } = require("worker_threads");
+const { createSharedBuffer, packObject, unpackObject } = require("./index");
+
+const sharedBuffer = createSharedBuffer();
+const worker = new Worker("./benchmarks/worker_fast.js", { workerData: sharedBuffer });
+
+packObject(JSON.stringify({ id: 1, name: "User A", timestamp: Date.now(), data: "x".repeat(512) }), sharedBuffer);
+
+(async () => {
+    while(true){
+        Atomics.wait(sharedBuffer.signal, 1, 0);
+        const processedData = unpackObject(sharedBuffer, 1);
+        console.log("[Main] Processed data received:", processedData);
+    }
+})();
+```
+
+---
+
+## 📌 Conclusion
+**fast-thread** enables **blazing-fast** thread communication in Node.js using **SharedArrayBuffer**, **Atomics**, and **fast-json-stringify**. This approach eliminates **message serialization overhead**, delivering **unparalleled performance** in **high-throughput parallel workloads**.
+
+🔥 **Use fast-thread if you need the highest performance in parallel processing for Node.js.**
