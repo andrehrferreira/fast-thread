@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+message Data {
+  int32 id = 1;
+  string name = 2;
+  int64 timestamp = 3;
+  string data = 4;
+  bool processed = 5;
+}

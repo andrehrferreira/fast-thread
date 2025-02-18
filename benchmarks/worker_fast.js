@@ -1,9 +1,21 @@
-const { parentPort } = require("worker_threads");
+const { workerData } = require("worker_threads");
+const { schema } = require("./schema.js");
 const { unpackObject, packObject } = require("../index.js");
+const fastJson = require("fast-json-stringify");
 
-parentPort.on("message", (sharedBuffer) => {
-    const data = unpackObject(sharedBuffer);
-    console.log(`[Worker] Dados recebidos:`, data);
-    data.processed = true;
-    parentPort.postMessage(packObject(data));
-});
+const stringify = fastJson(schema);
+const sharedBuffer = workerData;
+
+async function processData() {
+    while (true) {
+        Atomics.wait(sharedBuffer.signal, 0, 0);
+
+        let obj = unpackObject(sharedBuffer);
+        if (!obj) continue;
+
+        obj.processed = true;
+        packObject(stringify(obj), sharedBuffer, 1);
+    }
+}
+
+processData();

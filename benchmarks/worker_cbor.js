@@ -1,7 +1,8 @@
 const { parentPort } = require("worker_threads");
+const { encode, decode } = require("cbor");
 
 parentPort.on("message", (jsonBuffer) => {
-    const data = JSON.parse(jsonBuffer);
+    const data = decode(jsonBuffer);
     data.processed = true;
-    parentPort.postMessage(JSON.stringify(data));
+    parentPort.postMessage(encode(data));
 });
