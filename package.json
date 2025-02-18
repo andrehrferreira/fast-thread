@@ -1,27 +1,43 @@
 {
-  "name": "fast-thread",
-  "version": "0.0.1",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "vitest"
-  },
-  "keywords": [
-    "thread",
-    "sharedarraybuffer",
-    "msgpack",
-    "buffer",
-    "pack"
-  ],
-  "author": "Andre Ferreira",
-  "license": "MIT",
-  "devDependencies": {
-    "@cmmv/cli": "^0.5.9",
-    "bson": "^6.10.2",
-    "cbor": "^10.0.3",
-    "fast-json-stringify": "^6.0.1",
-    "msgpack-lite": "^0.1.26",
-    "protobufjs": "^7.4.0",
-    "vitest": "^3.0.5"
-  }
+    "name": "fast-thread",
+    "version": "0.0.1",
+    "description": "Implementing cross-thread serialization using SharedArrayBuffer + Atomics",
+    "author": "Andre Ferreira",
+    "license": "MIT",
+    "main": "index.js",
+    "scripts": {
+        "test": "vitest",
+        "release": "node ./release"
+    },
+    "keywords": [
+        "thread",
+        "sharedarraybuffer",
+        "atomics",
+        "fast-json-stringify",
+        "buffer",
+        "pack"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/andrehrferreira/fast-thread"
+    },
+    "bugs": {
+        "url": "https://github.com/andrehrferreira/fast-thread/issues"
+    },
+    "homepage": "https://github.com/andrehrferreira/fast-thread",
+    "dependencies": {
+        "fast-json-stringify": "^6.0.1"
+    },
+    "devDependencies": {
+        "@cmmv/cli": "^0.5.9",
+        "bson": "^6.10.2",
+        "cbor": "^10.0.3",
+        "chalk": "^5.4.1",
+        "enquirer": "^2.4.1",
+        "execa": "^9.5.2",
+        "msgpack-lite": "^0.1.26",
+        "protobufjs": "^7.4.0",
+        "semver": "^7.7.1",
+        "vitest": "^3.0.5"
+    }
 }

@@ -47,7 +47,6 @@ Our tests measured **message throughput** (msg/sec) and **bandwidth** (MB/sec) o
 | **msgpack-lite**        | 288,180  | 28,818.00          | 29.86        |
 | **CBOR**                | 223,945  | 22,394.50          | 23.20        |
 
-
 🚀 **fast-thread** achieved the best performance with a throughput of **~61,748 messages per second** and **65.34 MB/sec**.
 
 ---
@@ -67,19 +66,25 @@ Our tests measured **message throughput** (msg/sec) and **bandwidth** (MB/sec) o
 pnpm install fast-thread
 ```
 
----
-
 ## 🛠 Example Usage
 
 ### **Worker Thread (worker_fast.js)**
 ```javascript
 const { workerData } = require("worker_threads");
-const { schema } = require("./schema.js");
-const { unpackObject, packObject } = require("../index.js");
 const fastJson = require("fast-json-stringify");
+const { unpackObject, packObject } = require("fast-thread");
 
-const stringify = fastJson(schema);
 const sharedBuffer = workerData;
+const stringify = fastJson({
+    title: "Example",
+    type: "object",
+    properties: {
+        id: { type: "integer" },
+        name: { type: "string" },
+        timestamp: { type: "integer" },
+        data: { type: "string" }
+    }
+});
 
 async function processData() {
     while (true) {
@@ -101,8 +106,8 @@ processData();
 ### **Main Thread (test.js)**
 ```javascript
 const { Worker } = require("worker_threads");
-const { createSharedBuffer, packObject, unpackObject } = require("./index");
 const fastJson = require("fast-json-stringify");
+const { createSharedBuffer, packObject, unpackObject } = require("fast-thread");
 
 const sharedBuffer = createSharedBuffer();
 const worker = new Worker("./benchmarks/worker_fast.js", { workerData: sharedBuffer });
@@ -118,7 +123,12 @@ const stringify = fastJson({
     }
 });
 
-packObject(stringify({ id: 1, name: "User A", timestamp: Date.now(), data: "x".repeat(512) }), sharedBuffer);
+packObject(stringify({ 
+    id: 1, 
+    name: "User A", 
+    timestamp: Date.now(), 
+    data: "x".repeat(512) 
+}), sharedBuffer);
 
 (async () => {
     while(true){
