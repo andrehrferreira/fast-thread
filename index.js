@@ -56,11 +56,17 @@ function unpackObject(sharedBuffer, index = MAIN_INDEX) {
 class FastThread extends EventEmitter {
     exit = false;
 
-    constructor(workerFile, BUFFER_SIZE = 1024 * 1024) {
+    constructor(workerFile, BUFFER_SIZE = 1024 * 1024, options = {}) {
         super();
         this.exit = false;
         this.sharedBuffer = createSharedBuffer(BUFFER_SIZE);
-        this.worker = new Worker(workerFile, { workerData: this.sharedBuffer });
+        this.worker = new Worker(workerFile, {
+            ...options,
+            workerData: {
+                ...(options.workerData ?? {}),
+                ...this.sharedBuffer
+            },
+        });
 
         this.worker.on("online", (err) => this.listenForResponses());
         this.worker.on("error", (err) => this.emit("error", err));
