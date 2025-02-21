@@ -33,14 +33,10 @@
         "@cmmv/cli": "^0.5.9",
         "bson": "^6.10.2",
         "cbor": "^10.0.3",
-        "chalk": "^5.4.1",
         "conventional-changelog": "^6.0.0",
         "conventional-changelog-cli": "^5.0.0",
-        "enquirer": "^2.4.1",
-        "execa": "^9.5.2",
         "msgpack-lite": "^0.1.26",
         "protobufjs": "^7.4.0",
-        "semver": "^7.7.1",
         "vitest": "^3.0.5"
     }
 }
