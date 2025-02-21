@@ -7,7 +7,7 @@
     "main": "index.js",
     "scripts": {
         "test": "vitest",
-        "release": "node ./release",
+        "release": "cmmv release",
         "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
     },
     "keywords": [
