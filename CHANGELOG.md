@@ -1,3 +1,19 @@
+## [0.0.5](https://github.com/andrehrferreira/fast-thread/compare/v0.0.4...v0.0.5) (2025-02-21)
+
+
+### Bug Fixes
+
+* benckmark ([c4b3603](https://github.com/andrehrferreira/fast-thread/commit/c4b36035fa5d69504e543997c710ab3b53ef4a6d))
+* release ([eaee6bf](https://github.com/andrehrferreira/fast-thread/commit/eaee6bfe226befc342831640c79db78ddd6a80c8))
+* rollback release script ([3a7a123](https://github.com/andrehrferreira/fast-thread/commit/3a7a12341bbe0ef038eff48d2758472ea4604ac0))
+
+
+### Features
+
+* options to worker ([7a2105f](https://github.com/andrehrferreira/fast-thread/commit/7a2105fbcb3953a6d8ddc6c07d2d9fff839304c5))
+
+
+
 ## [0.0.4](https://github.com/andrehrferreira/fast-thread/compare/v0.0.3...v0.0.4) (2025-02-18)
 
 
