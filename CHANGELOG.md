@@ -1,3 +1,12 @@
+## [0.0.6](https://github.com/andrehrferreira/fast-thread/compare/v0.0.5...v0.0.6) (2025-02-22)
+
+
+### Bug Fixes
+
+* online emit ([7d503b1](https://github.com/andrehrferreira/fast-thread/commit/7d503b19cfeec34071252dd4cf98395c2fe3f202))
+
+
+
 ## [0.0.5](https://github.com/andrehrferreira/fast-thread/compare/v0.0.4...v0.0.5) (2025-02-21)
 
 
