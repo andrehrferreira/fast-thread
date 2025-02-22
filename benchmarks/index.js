@@ -6,6 +6,9 @@ const protobuf = require("protobufjs");
 const fastJson = require("fast-json-stringify");
 const { packObject, unpackObject, createSharedBuffer } = require("../index");
 const { performance } = require("perf_hooks");
+const ThreadStream = require('thread-stream');
+const { once } = require('events')
+const { join } = require('path');
 
 const TEST_DURATION = 10000;
 const MESSAGE_SIZE = 1024;
@@ -44,6 +47,11 @@ const methods = [
         schema,
         sharedBuffer: createSharedBuffer()
     },
+    {
+        name: "thread-stream",
+        workerFile: join(__dirname, 'worker_thread_stream.js'),
+        pack: JSON.stringify, unpack: JSON.parse
+    },
     { name: "JSON", workerFile: "./benchmarks/worker_json.js", pack: JSON.stringify, unpack: JSON.parse },
     { name: "msgpack-lite", workerFile: "./benchmarks/worker_serialize.js", pack: msgpack.encode, unpack: msgpack.decode },
     { name: "CBOR", workerFile: "./benchmarks/worker_cbor.js", pack: cbor.encode, unpack: cbor.decode },
@@ -62,12 +70,23 @@ function generateRandomMessage() {
 }
 
 async function runBenchmark({ name, workerFile, pack, unpack, schema, sharedBuffer }) {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
         const workerOptions = sharedBuffer ? { workerData: sharedBuffer } : undefined;
-        const worker = new Worker(workerFile, workerOptions);
+        const worker = (name === "thread-stream")
+            ? new ThreadStream({
+                filename: workerFile,
+                sync: false
+            })
+            : new Worker(workerFile, workerOptions);
+
         let messagesSent = 0;
         let bytesTransferred = 0;
         const startTime = performance.now();
+
+        async function handleResponse(port2){
+            const result = await once(port2, "message")
+            processResponse(result[0])
+        }
 
         function sendMessage() {
             let obj = generateRandomMessage();
@@ -78,7 +97,15 @@ async function runBenchmark({ name, workerFile, pack, unpack, schema, sharedBuff
             const packed = sharedBuffer ? pack(obj, sharedBuffer) : pack(obj);
             messagesSent++;
 
-            if (!sharedBuffer) worker.postMessage(packed);
+            if (!sharedBuffer) {
+                if(worker instanceof ThreadStream){
+                    const { port1, port2 } = new MessageChannel();
+                    worker.emit('message', { payload: packed, port: port1 }, [port1]);
+                    handleResponse(port2);
+                }
+                else
+                    worker.postMessage(packed);
+            }
         }
 
         function processResponse(processedBuffer) {
@@ -91,7 +118,12 @@ async function runBenchmark({ name, workerFile, pack, unpack, schema, sharedBuff
             if (performance.now() - startTime < TEST_DURATION) {
                 sendMessage();
             } else {
-                worker.terminate();
+                if(worker instanceof ThreadStream){
+                    worker.flushSync()
+                    worker.end()
+                }
+                else
+                    worker.terminate();
 
                 resolve({
                     name,
@@ -107,7 +139,11 @@ async function runBenchmark({ name, workerFile, pack, unpack, schema, sharedBuff
         worker.on("error", (error) => console.error(`[Error] ${name}:`, error));
 
         if(!sharedBuffer){
-            worker.on("message", (processedBuffer) => processResponse(processedBuffer));
+            worker.on("message", async (processedBuffer) => {
+                if(!(worker instanceof ThreadStream))
+                    processResponse(processedBuffer);
+            });
+
             sendMessage();
         }
         else {
