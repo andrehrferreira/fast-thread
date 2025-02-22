@@ -68,7 +68,11 @@ class FastThread extends EventEmitter {
             },
         });
 
-        this.worker.on("online", (err) => this.listenForResponses());
+        this.worker.on("online", (err) => {
+            this.emit("online");
+            this.listenForResponses();
+        });
+
         this.worker.on("error", (err) => this.emit("error", err));
         this.worker.on("exit", (code) => this.emit("exit", code));
     }

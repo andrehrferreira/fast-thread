@@ -11,6 +11,7 @@ async function processData() {
         Atomics.wait(sharedBuffer.signal, 0, 0);
 
         let obj = unpackObject(sharedBuffer);
+
         if (!obj) continue;
 
         obj.processed = true;

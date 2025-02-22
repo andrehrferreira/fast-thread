@@ -7,12 +7,11 @@ const { FastThread } = require("./index");
         console.log("[Main] Processed data received:", data);
     });
 
-    fastThread.on("terminated", () => {
-        console.log("Thread closed");
-    });
+    fastThread.on("terminated", () => console.log("Thread closed"));
+    fastThread.on("exit", (code) => console.log("Exit " + code));
 
     for(let i = 0; i < 100; i++){
-        fastThread.send({
+        await fastThread.send({
             id: i,
             name: "User " + i,
             timestamp: Date.now(),
